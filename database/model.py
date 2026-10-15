@@ -4,6 +4,7 @@ from functools import wraps
 from database.commands.get import getItem
 from database.commands.set import setItem
 from database.commands.delete import delItem
+from database.commands.exist import existItem
 
 connection = sqlite3.connect("kelvin.db")
 
@@ -25,3 +26,4 @@ class Operation:
     get = staticmethod(databaseContext(getItem))
     set = staticmethod(databaseContext(setItem))
     delete = staticmethod(databaseContext(delItem))
+    exists = staticmethod(databaseContext(existItem))

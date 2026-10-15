@@ -8,8 +8,8 @@ def getItem(conn, key: str):
         row = cursor.fetchone()
         if row:
             return row[0]
-        return "Couldn't find item"
+        return None
         
     except Exception as e:
         print(f"Database error: {e}")
-        return "Failed to fetch"
+        raise ConnectionError("Database connection failed") from e

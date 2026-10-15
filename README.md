@@ -2,7 +2,7 @@
 
 A small, dependency-free key-value server written in Python. It accepts commands over a TCP socket and persists data in a local SQLite database.
 
-This project is inspired by Redis, but it is **not compatible with the Redis protocol (RESP)** and is intended for learning and experimentation.
+The server uses the Redis Serialization Protocol version 2 (RESP2) for client requests and responses.
 
 ## Features
 
@@ -37,7 +37,7 @@ The server creates `kelvin.db` in the current working directory when it starts. 
 
 ## Usage
 
-Commands are plain UTF-8 text terminated by `\r\n`. Command names are case-insensitive, while keys and values are case-sensitive.
+Commands are sent as RESP2 arrays of bulk strings. Command names are case-insensitive, while keys and values are case-sensitive.
 
 | Command | Description | Example response |
 | --- | --- | --- |
@@ -54,23 +54,27 @@ import socket
 with socket.create_connection(("127.0.0.1", 6379)) as client:
     reader = client.makefile("rb")
 
-    client.sendall(b"SET name Kelvin\r\n")
+    client.sendall(b"*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$6\r\nKelvin\r\n")
     print(reader.readline().decode().strip())  # OK
 
-    client.sendall(b"GET name\r\n")
+    client.sendall(b"*2\r\n$3\r\nGET\r\n$4\r\nname\r\n")
+    print(reader.readline().decode().strip())  # $6
     print(reader.readline().decode().strip())  # Kelvin
 
-    client.sendall(b"DEL name\r\n")
-    print(reader.readline().decode().strip())  # OK
+    client.sendall(b"*2\r\n$3\r\nDEL\r\n$4\r\nname\r\n")
+    print(reader.readline().decode().strip())  # :1
 ```
 
 You can also send pipelined commands in one write:
 
 ```python
-client.sendall(b"SET name Kelvin\r\nGET name\r\n")
+client.sendall(
+    b"*3\r\n$3\r\nSET\r\n$4\r\nname\r\n$6\r\nKelvin\r\n"
+    b"*2\r\n$3\r\nGET\r\n$4\r\nname\r\n"
+)
 ```
 
-The server sends one newline-terminated response for each command.
+The server returns a complete RESP2 value for each command.
 
 ## Running the examples
 
@@ -99,10 +103,9 @@ These files are simple integration examples rather than an automated test suite.
 
 ## Current limitations
 
-- The wire format is custom plain text, not Redis RESP.
-- Keys and values cannot contain whitespace.
-- Only string values and four commands are supported.
-- A missing key returns `Couldn't find item` rather than a Redis-style null value.
+- Only RESP2 arrays containing bulk-string command arguments are accepted.
+- Command arguments must contain valid UTF-8 text; arbitrary binary values are not yet supported.
+- Only string values and five commands are supported.
 - Connections are handled synchronously, one client at a time.
 - The bind address and port can be changed through `network.setup.run()`, but there are no command-line flags yet.
 

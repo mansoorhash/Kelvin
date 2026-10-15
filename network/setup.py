@@ -1,5 +1,6 @@
 import socket as sk
 from network.execute.commands import execute
+from network.resp2 import RESPProtocolError, error_response, parse_request
 
 TIMEOUT = .5
 
@@ -22,6 +23,7 @@ def run(ip: str = "127.0.0.1", port: int = 6379):
             buffer = b""
             with conn:
                 conn.settimeout(TIMEOUT)
+                close_connection = False
                 while True:
                     try:
                         data = conn.recv(1024)
@@ -29,10 +31,22 @@ def run(ip: str = "127.0.0.1", port: int = 6379):
                             break
                         buffer += data
 
-                        while b"\r\n" in buffer:
-                            command, buffer = buffer.split(b"\r\n", 1)
-                            response = execute(command.decode('utf-8', errors='ignore'))
-                            conn.sendall((response + "\n").encode('utf-8'))
+                        while buffer:
+                            try:
+                                parsed = parse_request(buffer)
+                            except RESPProtocolError as error:
+                                conn.sendall(error_response(f"Protocol error: {error}"))
+                                close_connection = True
+                                break
+
+                            if parsed is None:
+                                break
+
+                            command, buffer = parsed
+                            conn.sendall(execute(command))
+
+                        if close_connection:
+                            break
                     except sk.timeout:
                         continue
     except KeyboardInterrupt:

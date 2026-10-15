@@ -1,38 +1,52 @@
 from database.model import Operation
+from network.resp2 import bulk_string, error_response, integer, simple_string
 
-def argumentCount(opr: str) -> str:
-    return f"{opr} wrong number of arguments"
+def argumentCount(opr: str) -> bytes:
+    return error_response(f"wrong number of arguments for '{opr.lower()}' command")
 
-def execute(commands: str) -> str:
-    parts = commands.strip().split()
 
-    if not parts:
-        return "ERR empty command"
-
-    operation = parts[0].upper()
+def _execute(parts: list[bytes]) -> bytes:
+    try:
+        operation = parts[0].decode("utf-8").upper()
+        arguments = [part.decode("utf-8") for part in parts[1:]]
+    except UnicodeDecodeError:
+        return error_response("command arguments must be valid UTF-8")
 
     if operation == "PING":
-        return "PONG"
+        if len(arguments) == 0:
+            return simple_string("PONG")
+        if len(arguments) == 1:
+            return bulk_string(arguments[0])
+        return argumentCount(operation)
     
     elif operation == "SET":
-        if len(parts) != 3:
+        if len(arguments) != 2:
             return argumentCount(operation)
 
-        key, value = parts[1], parts[2]
-        
-        return Operation.set(key=key, value=value)
+        key, value = arguments
+        Operation.set(key=key, value=value)
+        return simple_string("OK")
     
     elif operation == "GET":
-        if len(parts) != 2:
+        if len(arguments) != 1:
             return argumentCount(operation)
-        key = parts[1]
-        return Operation.get(key=key)
+        return bulk_string(Operation.get(key=arguments[0]))
 
     elif operation == "DEL":
-        if len(parts) != 2:
+        if len(arguments) != 1:
             return argumentCount(operation)
-        key = parts[1]
-        return Operation.delete(key=key)
+        return integer(Operation.delete(key=arguments[0]))
 
-    return "ERR invalid command"
-        
+    elif operation == "EXISTS":
+        if len(arguments) != 1:
+            return argumentCount(operation)
+        return integer(Operation.exists(key=arguments[0]))
+
+    return error_response(f"unknown command '{operation.lower()}'")
+
+
+def execute(commands: list[bytes]) -> bytes:
+    try:
+        return _execute(commands)
+    except ConnectionError as e:
+        return error_response(str(e))

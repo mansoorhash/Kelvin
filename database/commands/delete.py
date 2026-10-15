@@ -7,10 +7,8 @@ def delItem(conn, key: str):
 
         conn.commit()
 
-        if cursor.rowcount == 0:
-            return "Key not found"
+        return cursor.rowcount
 
     except Exception as e:
-        print(f"Database error during delete {e}")
-        return "Failed to delete item"
-    return "OK"
+        print(f"Database error: {e}")
+        raise ConnectionError("Database connection failed") from e

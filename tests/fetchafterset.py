@@ -5,10 +5,16 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
 
     reader = client.makefile("rb")
 
-    client.sendall(b"GET name\r\nDEL name\r\nGET name\r\n")
+    client.sendall(
+        b"*2\r\n$3\r\nGET\r\n$4\r\nname\r\n"
+        b"*2\r\n$3\r\nDEL\r\n$4\r\nname\r\n"
+        b"*2\r\n$3\r\nGET\r\n$4\r\nname\r\n"
+    )
 
     response1 = reader.readline()
     print(f"GET response: {response1.decode().strip()}")
+    if response1 != b"$-1\r\n":
+        print(reader.readline().decode().strip())
 
     response2 = reader.readline()
     print(f"DEL response: {response2.decode().strip()}")

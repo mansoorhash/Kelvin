@@ -1,5 +1,6 @@
 import asyncio
 import unittest
+from functools import partial
 
 from network.client import handle_client
 
@@ -9,7 +10,8 @@ PING = b"*1\r\n$4\r\nPING\r\n"
 
 class ConcurrencyTests(unittest.IsolatedAsyncioTestCase):
     async def asyncSetUp(self):
-        self.server = await asyncio.start_server(handle_client, "127.0.0.1", 0)
+        handler = partial(handle_client, cache_size=None)
+        self.server = await asyncio.start_server(handler, "127.0.0.1", 0)
         self.port = self.server.sockets[0].getsockname()[1]
 
     async def asyncTearDown(self):

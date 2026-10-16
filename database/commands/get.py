@@ -1,4 +1,8 @@
-def getItem(conn, key: str):
+def getItem(conn, cache, key: str):
+    if cache is not None and key in cache:
+        cache.move_to_end(key)
+        return cache[key]
+
     try:
         cursor = conn.execute(
             "SELECT value FROM kv WHERE key = ?",
@@ -7,6 +11,8 @@ def getItem(conn, key: str):
 
         row = cursor.fetchone()
         if row:
+            if cache is not None:
+                cache[key] = row[0]
             return row[0]
         return None
         

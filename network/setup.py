@@ -1,14 +1,20 @@
 import asyncio
+from functools import partial
 
 from network.client import handle_client
 
 TIMEOUT = .5
 
-async def serve(ip: str, port: int):
-    server = await asyncio.start_server(
+async def serve(ip: str, port: int, cache_size: int):
+    handler = partial(
         handle_client,
+        cache_size=cache_size
+    )
+
+    server = await asyncio.start_server(
+        handler,
         ip,
-        port
+        port,
     )
 
     addresses = ", ".join(
@@ -19,9 +25,9 @@ async def serve(ip: str, port: int):
     async with server:
         await server.serve_forever()
 
-def run(ip: str = "127.0.0.1", port: int = 6379):
+def run(ip: str, port: int, cache_size: int):
     try:
-        asyncio.run(serve(ip, port))
+        asyncio.run(serve(ip, port, cache_size))
     except KeyboardInterrupt:
         print("\n[!] Shutdown signal received. Closing server socket...")
     finally:

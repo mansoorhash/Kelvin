@@ -1,14 +1,18 @@
-# Redis-Inspired Key-Value Server
+# Kelvin
 
-A small, dependency-free key-value server written in Python. It accepts commands over a TCP socket and persists data in a local SQLite database.
+A small, dependency-free, Redis-inspired key-value server written in Python. Kelvin accepts RESP2 commands over TCP, serves multiple clients with `asyncio`, and persists data in SQLite.
 
 The server uses the Redis Serialization Protocol version 2 (RESP2) for client requests and responses.
 
 ## Features
 
 - TCP server listening on `127.0.0.1:6379` by default
+- Concurrent client connections with `asyncio`
+- Redis-compatible RESP2 request and response framing
 - Persistent key-value storage with SQLite
-- Multiple commands can be sent over one connection
+- Optional bounded in-memory LRU cache
+- Pipelined commands over a single connection
+- Configurable IP address, port, and cache size from the command line
 - No third-party Python packages required
 - Graceful shutdown with `Ctrl+C`
 
@@ -29,11 +33,44 @@ python main.py
 You should see:
 
 ```text
-Redis Starting
-Server listening on 127.0.0.1:6379. Press Ctrl+C to exit instantly.
+Kelvin Starting
+Server listening on: ('127.0.0.1', 6379)
+Press Ctrl+C to exit instantly.
 ```
 
 The server creates `kelvin.db` in the current working directory when it starts. This file stores all keys and values and is excluded from Git.
+
+### Command-line options
+
+```bash
+python main.py --help
+```
+
+| Option | Description | Default |
+| --- | --- | --- |
+| `--ip ADDRESS` | Address on which the server listens | `127.0.0.1` |
+| `--port PORT` | TCP port on which the server listens | `6379` |
+| `--cache [SIZE]` | Enable the in-memory LRU cache | Disabled |
+
+Supplying `--cache` without a size enables a capacity of 100 entries:
+
+```bash
+python main.py --cache
+```
+
+Provide an explicit positive capacity with:
+
+```bash
+python main.py --cache 1000
+```
+
+To use a different address and port:
+
+```bash
+python main.py --ip 127.0.0.1 --port 6380
+```
+
+Cache eviction removes only the in-memory copy. Values remain available in SQLite and can be loaded into the cache again on a later request.
 
 ## Usage
 
@@ -41,11 +78,11 @@ Commands are sent as RESP2 arrays of bulk strings. Command names are case-insens
 
 | Command | Description | Example response |
 | --- | --- | --- |
-| `PING` | Check that the server is available | `PONG` |
-| `SET <key> <value>` | Create or replace a value | `OK` |
-| `GET <key>` | Retrieve a value | The stored value |
-| `DEL <key>` | Delete a key | `OK` |
-| `EXISTS <key>` | Check if key exists | 1 |
+| `PING [message]` | Check availability or echo a message | `+PONG` or a bulk string |
+| `SET <key> <value>` | Create or replace a value | `+OK` |
+| `GET <key>` | Retrieve a value | Bulk string or `$-1` |
+| `DEL <key>` | Delete a key | `:1` or `:0` |
+| `EXISTS <key>` | Check whether a key exists | `:1` or `:0` |
 
 Here is a minimal Python client:
 
@@ -77,7 +114,31 @@ client.sendall(
 
 The server returns a complete RESP2 value for each command.
 
-## Running the examples
+## Tests
+
+> Some tests were generated with AI assistance and subsequently reviewed and validated by the project author.
+
+Run the complete automated test suite from the project root:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The suite covers command dispatch, RESP2 parsing and serialization, fragmented and pipelined requests, concurrent clients, SQLite-backed cache behavior, and LRU eviction.
+
+Run one test module with:
+
+```bash
+python -m unittest discover -s tests -p "test_cache.py" -v
+python -m unittest discover -s tests -p "test_commands.py" -v
+python -m unittest discover -s tests -p "test_concurrency.py" -v
+python -m unittest discover -s tests -p "test_resp2.py" -v
+```
+
+The current suite contains 30 tests.
+
+
+## Manual examples
 
 Start the server in one terminal, then run an example client in another:
 
@@ -86,7 +147,7 @@ python tests/buffer.py
 python tests/fetchafterset.py
 ```
 
-These files are simple integration examples rather than an automated test suite. They connect to a server already running on `127.0.0.1:6379` and may read or modify the local database.
+These scripts are manual integration examples. They connect to a server already running on `127.0.0.1:6379` and may read or modify the local database.
 
 ## Project structure
 
@@ -94,12 +155,14 @@ These files are simple integration examples rather than an automated test suite.
 .
 |-- main.py                     # Application entry point
 |-- database/
-|   |-- model.py                # SQLite connection and operation wrapper
-|   `-- commands/               # GET, SET, and DEL database operations
+|   |-- model.py                # SQLite context and shared LRU cache
+|   `-- commands/               # SET, GET, DEL, and EXISTS operations
 |-- network/
-|   |-- setup.py                # TCP server and request buffering
-|   `-- execute/commands.py     # Command parsing and dispatch
-`-- tests/                      # Socket client examples
+|   |-- setup.py                # Asyncio TCP server setup
+|   |-- client.py               # Per-client buffering and request handling
+|   |-- resp2.py                # RESP2 parser and response encoders
+|   `-- execute/commands.py     # Command validation and dispatch
+`-- tests/                      # Automated tests and manual clients
 ```
 
 ## Current limitations
@@ -107,8 +170,8 @@ These files are simple integration examples rather than an automated test suite.
 - Only RESP2 arrays containing bulk-string command arguments are accepted.
 - Command arguments must contain valid UTF-8 text; arbitrary binary values are not yet supported.
 - Only string values and five commands are supported.
-- Connections are handled synchronously, one client at a time.
-- The bind address and port can be changed through `network.setup.run()`, but there are no command-line flags yet.
+- Database operations use synchronous SQLite calls and briefly block the event loop while executing.
+- Authentication, encryption, key expiration, transactions, and Redis persistence formats are not yet supported.
 
 ## Stopping the server
 

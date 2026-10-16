@@ -77,6 +77,6 @@ def integer(value: int) -> bytes:
 def bulk_string(value: str | bytes | None) -> bytes:
     if value is None:
         return b"$-1\r\n"
-
     data = value if isinstance(value, bytes) else value.encode("utf-8")
+    print(f"${len(data)}\r\n".encode("ascii") + data + b"\r\n")
     return f"${len(data)}\r\n".encode("ascii") + data + b"\r\n"

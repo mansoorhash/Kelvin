@@ -1,4 +1,4 @@
-def setItem(conn, key: str, value: str):
+def setItem(conn, cache, key: str, value: str):
     try:
         cursor = conn.execute(
             "INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)",
@@ -13,4 +13,7 @@ def setItem(conn, key: str, value: str):
         print(f"Database error: {e}")
         raise ConnectionError("Database connection failed") from e
 
+    if cache is not None:
+        cache[key] = value
+        cache.move_to_end(key)
     return "OK"

@@ -9,7 +9,9 @@ from network.resp2 import (
 
 async def handle_client(
     reader: asyncio.StreamReader,
-    writer: asyncio.StreamWriter
+    writer: asyncio.StreamWriter,
+    *,
+    cache_size: int | None,
 ):
     buffer = b""
     try:
@@ -31,7 +33,7 @@ async def handle_client(
                     break
 
                 command, buffer = parsed
-                resp = execute(command)
+                resp = execute(command, cache_size=cache_size)
 
                 writer.write(resp)
                 await writer.drain()

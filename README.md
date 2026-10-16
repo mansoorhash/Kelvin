@@ -45,7 +45,8 @@ Commands are sent as RESP2 arrays of bulk strings. Command names are case-insens
 | `SET <key> <value>` | Create or replace a value | `OK` |
 | `GET <key>` | Retrieve a value | The stored value |
 | `DEL <key>` | Delete a key | `OK` |
-| `EXISTS <key>` | Check if key exists |  |
+| `EXISTS <key>` | Check if key exists | 1 |
+
 Here is a minimal Python client:
 
 ```python

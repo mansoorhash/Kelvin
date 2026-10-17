@@ -9,7 +9,11 @@ class CacheTests(unittest.TestCase):
     def setUp(self):
         self.connection = sqlite3.connect(":memory:")
         self.connection.execute(
-            "CREATE TABLE kv(key TEXT PRIMARY KEY, value TEXT)"
+            "CREATE TABLE kv("
+            "key TEXT PRIMARY KEY, "
+            "value TEXT, "
+            "expires_at REAL DEFAULT NULL"
+            ")"
         )
         self.connection_patch = patch.object(
             model,
@@ -57,7 +61,7 @@ class CacheTests(unittest.TestCase):
         model.Operation.set(key="third", value="3", cache_size=2)
 
         self.assertEqual(list(model.cache), ["first", "third"])
-        self.assertEqual(model.cache["first"], "updated")
+        self.assertEqual(model.cache["first"], ("updated", None))
 
     def test_delete_invalidates_cached_value(self):
         model.Operation.set(key="name", value="john", cache_size=2)
@@ -76,7 +80,7 @@ class CacheTests(unittest.TestCase):
         self.connection.commit()
 
         self.assertEqual(model.Operation.exists(key="name", cache_size=2), 1)
-        self.assertEqual(model.cache["name"], "john")
+        self.assertEqual(model.cache["name"], ("john", None))
 
     def test_eviction_does_not_delete_persistent_value(self):
         model.Operation.set(key="first", value="1", cache_size=1)

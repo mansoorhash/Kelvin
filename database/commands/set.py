@@ -1,8 +1,14 @@
-def setItem(conn, cache, key: str, value: str):
+import time
+
+def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_time: int | None = None):
+    expires_at = None
+    if exp_type:
+        expires_at = round(time.time() + (exp_time / 1000 if exp_type == "PX" else exp_time), 4)
+
     try:
         cursor = conn.execute(
-            "INSERT OR REPLACE INTO kv (key, value) VALUES (?, ?)",
-            (key, value)
+            "INSERT OR REPLACE INTO kv (key, value, expires_at) VALUES (?, ?, ?)",
+            (key, value, expires_at)
         )
         conn.commit()
 
@@ -14,6 +20,6 @@ def setItem(conn, cache, key: str, value: str):
         raise ConnectionError("Database connection failed") from e
 
     if cache is not None:
-        cache[key] = value
+        cache[key] = (value, expires_at)
         cache.move_to_end(key)
     return "OK"

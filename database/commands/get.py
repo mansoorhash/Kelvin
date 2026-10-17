@@ -5,15 +5,15 @@ def getItem(conn, cache, key: str):
 
     try:
         cursor = conn.execute(
-            "SELECT value FROM kv WHERE key = ?",
+            "SELECT value, expires_at FROM kv WHERE key = ?",
             (key,)
         )
 
         row = cursor.fetchone()
         if row:
             if cache is not None:
-                cache[key] = row[0]
-            return row[0]
+                cache[key] = (row[0], row[1])
+            return (row[0], row[1])
         return None
         
     except Exception as e:

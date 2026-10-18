@@ -3,6 +3,7 @@ import time
 from functools import wraps
 from collections import OrderedDict
 
+from database.result import CommandResults
 from database.commands.get import getItem
 from database.commands.set import setItem
 from database.commands.delete import delItem
@@ -27,19 +28,15 @@ def databaseContext(func):
         active_cache = cache if cache_size is not None else None
         with connection:
             result = func(connection, active_cache, *args, **kwargs)
-        if result and isinstance(result, tuple) and result[1] is not None:
-            exp = result[1]
-            if time.time() >= exp:
-                with connection:
+            if result.expires_at is not None:
+                if time.time() >= result.expires_at:
                     delItem(connection, active_cache, kwargs["key"])
                     return None
 
         if active_cache is not None:
             while len(active_cache) > cache_size:
                 active_cache.popitem(last=False)
-
-        return_value = result[0] if isinstance(result, tuple) else result
-        return return_value
+        return result.return_value
     return wrapper
 
 class Operation:

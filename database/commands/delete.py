@@ -1,5 +1,8 @@
 import time
-def delItem(conn, cache, key: str):
+
+from database.result import CommandResults
+
+def delItem(conn, cache, key: str) -> CommandResults:
 
     state = 0
     now = time.time()
@@ -24,4 +27,4 @@ def delItem(conn, cache, key: str):
     elif expires_at is not None and now >= expires_at:
         state = 0
 
-    return state
+    return CommandResults(state)

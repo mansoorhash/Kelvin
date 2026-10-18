@@ -1,6 +1,7 @@
 import time
+from database.result import CommandResults
 
-def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_time: int | None = None):
+def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_time: int | None = None) -> CommandResults:
     expires_at = None
     if exp_type:
         expires_at = round(time.time() + (exp_time / 1000 if exp_type == "PX" else exp_time), 4)
@@ -22,4 +23,4 @@ def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_
     if cache is not None:
         cache[key] = (value, expires_at)
         cache.move_to_end(key)
-    return "OK"
+    return CommandResults("OK")

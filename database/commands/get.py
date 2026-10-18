@@ -1,7 +1,9 @@
-def getItem(conn, cache, key: str):
+from database.result import CommandResults
+
+def getItem(conn, cache, key: str) -> CommandResults:
     if cache is not None and key in cache:
         cache.move_to_end(key)
-        return cache[key]
+        return CommandResults(cache[key][0], cache[key][1])
 
     try:
         cursor = conn.execute(
@@ -13,8 +15,8 @@ def getItem(conn, cache, key: str):
         if row:
             if cache is not None:
                 cache[key] = (row[0], row[1])
-            return (row[0], row[1])
-        return None
+            return CommandResults(row[0], row[1])
+        return CommandResults()
         
     except Exception as e:
         print(f"Database error: {e}")

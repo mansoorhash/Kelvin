@@ -1,10 +1,10 @@
 import time
-from database.result import CommandResults
+from models import CommandResults
 
 def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_time: int | None = None) -> CommandResults:
     expires_at = None
     if exp_type:
-        expires_at = round(time.time() + (exp_time / 1000 if exp_type == "PX" else exp_time), 4)
+        expires_at = round(time.time() + (exp_time / 1000 if exp_type == "PX" else exp_time), 4) if exp_type != "PXAT" else exp_time / 1000
 
     try:
         cursor = conn.execute(
@@ -23,4 +23,4 @@ def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_
     if cache is not None:
         cache[key] = (value, expires_at)
         cache.move_to_end(key)
-    return CommandResults("OK")
+    return CommandResults("OK", expires_at)

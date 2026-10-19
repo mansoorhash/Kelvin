@@ -92,10 +92,12 @@ class ExpirationTests(unittest.TestCase):
         ):
             second_ttl = model.Operation.ttl(key="session", cache_size=2)
 
-        self.assertEqual(first_ttl, 8)
-        self.assertEqual(second_ttl, 4)
-        self.assertIsInstance(first_ttl, int)
-        self.assertIsInstance(second_ttl, int)
+        self.assertEqual(first_ttl.return_value, 8)
+        self.assertEqual(second_ttl.return_value, 4)
+        self.assertIsInstance(first_ttl.return_value, int)
+        self.assertIsInstance(second_ttl.return_value, int)
+        self.assertEqual(first_ttl.expires_at, 1_010.0)
+        self.assertEqual(second_ttl.expires_at, 1_010.0)
         self.assertEqual(model.cache["session"], ("abc", 1_010.0))
 
     def test_expired_cache_hit_is_lazily_deleted(self):
@@ -111,7 +113,8 @@ class ExpirationTests(unittest.TestCase):
         with patch("database.model.time.time", return_value=1_000.2):
             result = model.Operation.get(key="short", cache_size=2)
 
-        self.assertIsNone(result)
+        self.assertIsNone(result.return_value)
+        self.assertIsNone(result.expires_at)
         self.assertNotIn("short", model.cache)
         row = self.connection.execute(
             "SELECT key FROM kv WHERE key = ?",
@@ -132,7 +135,7 @@ class ExpirationTests(unittest.TestCase):
         with patch("database.model.time.time", return_value=1_000.2):
             response = execute([b"EXISTS", b"short"], cache_size=2)
 
-        self.assertEqual(response, b":0\r\n")
+        self.assertEqual(response.response, b":0\r\n")
 
     def test_ttl_returns_minus_two_after_lazy_expiration(self):
         with patch("database.commands.set.time.time", return_value=1_000.0):
@@ -150,7 +153,7 @@ class ExpirationTests(unittest.TestCase):
         ):
             response = execute([b"TTL", b"short"], cache_size=2)
 
-        self.assertEqual(response, b":-2\r\n")
+        self.assertEqual(response.response, b":-2\r\n")
 
     def test_delete_returns_zero_for_expired_key(self):
         with patch("database.commands.set.time.time", return_value=1_000.0):
@@ -167,7 +170,7 @@ class ExpirationTests(unittest.TestCase):
         with patch("database.model.time.time", return_value=1_000.2):
             response = execute([b"DEL", b"short"], cache_size=2)
 
-        self.assertEqual(response, b":0\r\n")
+        self.assertEqual(response.response, b":0\r\n")
 
     def test_persistent_key_has_minus_one_ttl(self):
         model.Operation.set(
@@ -178,7 +181,7 @@ class ExpirationTests(unittest.TestCase):
 
         response = execute([b"TTL", b"permanent"], cache_size=2)
 
-        self.assertEqual(response, b":-1\r\n")
+        self.assertEqual(response.response, b":-1\r\n")
 
     def test_set_without_expiration_clears_previous_ttl(self):
         with patch("database.commands.set.time.time", return_value=1_000.0):
@@ -197,7 +200,68 @@ class ExpirationTests(unittest.TestCase):
         )
 
         self.assertEqual(model.cache["name"], ("new", None))
-        self.assertEqual(model.Operation.ttl(key="name", cache_size=2), -1)
+        result = model.Operation.ttl(key="name", cache_size=2)
+        self.assertEqual(result.return_value, -1)
+        self.assertIsNone(result.expires_at)
+
+    def test_get_unexpired_value_preserves_expiration_metadata(self):
+        with patch("database.commands.set.time.time", return_value=1_000.0):
+            model.Operation.set(
+                key="session",
+                value="abc",
+                exp_type="EX",
+                exp_time=10,
+                cache_size=2,
+            )
+
+        with patch("database.model.time.time", return_value=1_005.0):
+            result = model.Operation.get(key="session", cache_size=2)
+
+        self.assertEqual(result.return_value, "abc")
+        self.assertEqual(result.expires_at, 1_010.0)
+
+    def test_key_expires_exactly_at_deadline(self):
+        with patch("database.commands.set.time.time", return_value=1_000.0):
+            model.Operation.set(
+                key="session",
+                value="abc",
+                exp_type="EX",
+                exp_time=10,
+                cache_size=2,
+            )
+
+        with patch("database.model.time.time", return_value=1_010.0):
+            result = model.Operation.get(key="session", cache_size=2)
+
+        self.assertIsNone(result.return_value)
+        self.assertNotIn("session", model.cache)
+        row = self.connection.execute(
+            "SELECT key FROM kv WHERE key = ?",
+            ("session",),
+        ).fetchone()
+        self.assertIsNone(row)
+
+    def test_ttl_missing_key_returns_empty_command_result(self):
+        result = model.Operation.ttl(key="missing", cache_size=2)
+
+        self.assertIsNone(result.return_value)
+        self.assertIsNone(result.expires_at)
+
+    def test_exists_before_expiration_returns_one(self):
+        with patch("database.commands.set.time.time", return_value=1_000.0):
+            model.Operation.set(
+                key="session",
+                value="abc",
+                exp_type="EX",
+                exp_time=10,
+                cache_size=2,
+            )
+
+        with patch("database.model.time.time", return_value=1_009.0):
+            result = model.Operation.exists(key="session", cache_size=2)
+
+        self.assertEqual(result.return_value, 1)
+        self.assertEqual(result.expires_at, 1_010.0)
 
 
 if __name__ == "__main__":

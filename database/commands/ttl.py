@@ -1,5 +1,5 @@
 import time
-from database.result import CommandResults
+from models import CommandResults
 
 def ttlItem(conn, cache, key: str) -> CommandResults:
     if cache is not None and key in cache:

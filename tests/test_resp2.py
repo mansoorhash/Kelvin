@@ -55,6 +55,36 @@ class ParseRequestTests(unittest.TestCase):
         with self.assertRaises(RESPProtocolError):
             parse_request(b"*1\r\n$nope\r\nPING\r\n")
 
+    def test_rejects_invalid_array_length(self):
+        with self.assertRaises(RESPProtocolError):
+            parse_request(b"*nope\r\n")
+
+    def test_rejects_empty_array(self):
+        with self.assertRaises(RESPProtocolError):
+            parse_request(b"*0\r\n")
+
+    def test_rejects_negative_array_length(self):
+        with self.assertRaises(RESPProtocolError):
+            parse_request(b"*-1\r\n")
+
+    def test_rejects_null_bulk_argument(self):
+        with self.assertRaises(RESPProtocolError):
+            parse_request(b"*1\r\n$-1\r\n")
+
+    def test_rejects_non_bulk_array_element(self):
+        with self.assertRaises(RESPProtocolError):
+            parse_request(b"*1\r\n+PING\r\n")
+
+    def test_rejects_bulk_string_without_terminating_crlf(self):
+        with self.assertRaises(RESPProtocolError):
+            parse_request(b"*1\r\n$4\r\nPINGxx")
+
+    def test_returns_none_for_fragmented_array_header(self):
+        self.assertIsNone(parse_request(b"*1\r"))
+
+    def test_returns_none_for_fragmented_bulk_payload(self):
+        self.assertIsNone(parse_request(b"*1\r\n$4\r\nPIN"))
+
 
 class ResponseEncodingTests(unittest.TestCase):
     def test_simple_string(self):

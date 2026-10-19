@@ -1,5 +1,6 @@
 import asyncio
 
+from network.aof import append_to_aof
 from network.execute.commands import execute
 from network.resp2 import (
     RESPProtocolError,
@@ -35,7 +36,10 @@ async def handle_client(
                 command, buffer = parsed
                 resp = execute(command, cache_size=cache_size)
 
-                writer.write(resp)
+                writer.write(resp.response)
+                if resp.command is not None:
+                    append_to_aof(command, resp)
+
                 await writer.drain()
     except (ConnectionError, asyncio.CancelledError):
         pass

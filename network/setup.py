@@ -2,10 +2,14 @@ import asyncio
 from functools import partial
 
 from network.client import handle_client
+from network.aof import aof_check
 
 TIMEOUT = .5
 
 async def serve(ip: str, port: int, cache_size: int):
+    failed = aof_check(cache_size=cache_size)
+    if failed is not None: return (print(failed))
+
     handler = partial(
         handle_client,
         cache_size=cache_size

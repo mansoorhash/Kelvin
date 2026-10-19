@@ -69,6 +69,45 @@ class ConcurrencyTests(unittest.IsolatedAsyncioTestCase):
         finally:
             await self.close_client(writer)
 
+    async def test_protocol_error_returns_error_and_closes_connection(self):
+        reader, writer = await self.open_client()
+
+        try:
+            writer.write(b"+PING\r\n")
+            await writer.drain()
+
+            response = await asyncio.wait_for(reader.readline(), timeout=1)
+            eof = await asyncio.wait_for(reader.read(), timeout=1)
+
+            self.assertEqual(
+                response,
+                b"-ERR Protocol error: expected an array of bulk strings\r\n",
+            )
+            self.assertEqual(eof, b"")
+        finally:
+            await self.close_client(writer)
+
+    async def test_fragmented_pipelined_commands_preserve_all_responses(self):
+        reader, writer = await self.open_client()
+
+        try:
+            payload = PING + PING + PING
+            writer.write(payload[:11])
+            await writer.drain()
+            writer.write(payload[11:25])
+            await writer.drain()
+            writer.write(payload[25:])
+            await writer.drain()
+
+            responses = [
+                await asyncio.wait_for(reader.readline(), timeout=1)
+                for _ in range(3)
+            ]
+
+            self.assertEqual(responses, [b"+PONG\r\n"] * 3)
+        finally:
+            await self.close_client(writer)
+
 
 if __name__ == "__main__":
     unittest.main()

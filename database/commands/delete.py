@@ -1,6 +1,6 @@
 import time
 
-from database.result import CommandResults
+from models import CommandResults
 
 def delItem(conn, cache, key: str) -> CommandResults:
 

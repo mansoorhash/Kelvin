@@ -1,65 +1,78 @@
 from database.model import Operation
 from network.resp2 import bulk_string, error_response, integer, simple_string
+from models import ExecuteResult
 
 def argumentCount(opr: str) -> bytes:
     return error_response(f"wrong number of arguments for '{opr.lower()}' command")
 
-def execute(commands: list[bytes], cache_size: int | None) -> bytes:
+def execute(commands: list[bytes | str], cache_size: int | None, aof: bool = False) -> ExecuteResult:
     try:
-        try:
-            operation = commands[0].decode("utf-8").upper()
-            arguments = [part.decode("utf-8") for part in commands[1:]]
-        except UnicodeDecodeError:
-            return error_response("command arguments must be valid UTF-8")
+        if not aof:
+            try:
+                operation = commands[0].decode("utf-8").upper()
+                arguments = [part.decode("utf-8") for part in commands[1:]]
+            except UnicodeDecodeError:
+                return ExecuteResult(error_response("command arguments must be valid UTF-8"))
+        else:
+            operation = commands[0]
+            arguments = commands[1:]
         
         if operation == "PING":
             if len(arguments) == 0:
-                return simple_string("PONG")
+                return ExecuteResult(simple_string("PONG"))
             if len(arguments) == 1:
-                return bulk_string(arguments[0])
-            return argumentCount(operation)
+                return ExecuteResult(bulk_string(arguments[0]))
+            return ExecuteResult(argumentCount(operation))
         
         elif operation == "SET":
             if len(arguments) == 2:
                 key, value = arguments
-                Operation.set(key=key, value=value, cache_size=cache_size)
+                result = Operation.set(key=key, value=value, cache_size=cache_size)
             elif len(arguments) == 4:
                 key, value, exp_type, expiration_value = arguments
-                if exp_type != "PX" and exp_type != "EX":
-                    return error_response(f"invalid expiration type, use PX (milliseconds) or EX (seconds)")
+                if exp_type != "PX" and exp_type != "EX" and exp_type != "PXAT":
+                    return ExecuteResult(error_response(f"invalid expiration type, use PX (milliseconds) or EX (seconds)"))
                 if not expiration_value.isdecimal() or int(expiration_value) <= 0:
-                    return error_response(f"invalid expiration time (time>0)")
-                Operation.set(key=key, value=value, cache_size=cache_size, exp_type=exp_type, exp_time=int(expiration_value))
+                    return ExecuteResult(error_response(f"invalid expiration time (time>0)"))
+                result = Operation.set(key=key, value=value, cache_size=cache_size, exp_type=exp_type, exp_time=int(expiration_value))
             else:
-                return argumentCount(operation)            
-            return simple_string("OK")
+                return ExecuteResult(argumentCount(operation))            
+            if result.return_value is None:
+                return ExecuteResult(response=simple_string("OK"))
+            return ExecuteResult(
+                response=simple_string(result.return_value),
+                command=operation,
+                expires_at=result.expires_at
+            )
         
         elif operation == "GET":
             if len(arguments) != 1:
-                return argumentCount(operation)
+                return ExecuteResult(argumentCount(operation))
             result = Operation.get(key=arguments[0], cache_size=cache_size)
-            return bulk_string(result)
+            return ExecuteResult(bulk_string(result.return_value))
     
         elif operation == "DEL":
             if len(arguments) != 1:
-                return argumentCount(operation)
-            return integer(Operation.delete(key=arguments[0], cache_size=cache_size))
-    
+                return ExecuteResult(argumentCount(operation))
+            result = Operation.delete(key=arguments[0], cache_size=cache_size)
+            return ExecuteResult(
+                integer(result.return_value),
+                command=operation,
+            )
+        
         elif operation == "EXISTS":
             if len(arguments) != 1:
-                return argumentCount(operation)
+                return ExecuteResult(argumentCount(operation))
             result = Operation.exists(key=arguments[0], cache_size=cache_size)
-            if result is None: result = 0
-            return integer(result)
+            return ExecuteResult(integer(0 if result.return_value is None else result.return_value))
+                
 
         elif operation == "TTL":
             if len(arguments) != 1:
-                return argumentCount(operation)
+                return ExecuteResult(argumentCount(operation))
             result = Operation.ttl(key=arguments[0], cache_size=cache_size)
-            if result is None: result = -2
-            else: result = int(result)
-            return integer(result)
+            return ExecuteResult(integer(-2 if result.return_value is None else result.return_value))
 
-        return error_response(f"unknown command '{operation.lower()}'")
+        return ExecuteResult(error_response(f"unknown command '{operation.lower()}'"))
     except ConnectionError as e:
-        return error_response(str(e))
+        return ExecuteResult(error_response(str(e)))

@@ -1,4 +1,4 @@
-from database.result import CommandResults
+from models import CommandResults
 
 def getItem(conn, cache, key: str) -> CommandResults:
     if cache is not None and key in cache:

@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from network.aof import append_to_aof
 from network.execute.commands import execute
@@ -7,12 +8,18 @@ from network.resp2 import (
     error_response,
     parse_request,
 )
+from models import WriteRequest
+
+last_aof = time.time()
+write_lock = asyncio.Lock()
 
 async def handle_client(
     reader: asyncio.StreamReader,
     writer: asyncio.StreamWriter,
     *,
     cache_size: int | None,
+    aof_type: str = "no",
+    write_queue: asyncio.Queue
 ):
     buffer = b""
     try:
@@ -34,12 +41,33 @@ async def handle_client(
                     break
 
                 command, buffer = parsed
-                resp = execute(command, cache_size=cache_size)
+                operation = command[0].decode(
+                    "utf-8",
+                    errors="ignore",
+                ).upper()
 
+                if operation in ("SET", "DEL") and write_queue is not None:
+                    loop = asyncio.get_running_loop()
+                    future = loop.create_future()
+
+                    request = WriteRequest(
+                        command=command,
+                        cache_size=cache_size,
+                        future=future,
+                    )
+                    
+                    await write_queue.put(request)
+
+                    resp = await future
+                else:
+                    resp = execute(command, cache_size=cache_size)
+                    if aof_type != "no" and resp.command is not None:
+                        asyncio.to_thread(
+                            append_to_aof,
+                            [(command, resp)],
+                            aof_type == "always"
+                        )
                 writer.write(resp.response)
-                if resp.command is not None:
-                    append_to_aof(command, resp)
-
                 await writer.drain()
     except (ConnectionError, asyncio.CancelledError):
         pass

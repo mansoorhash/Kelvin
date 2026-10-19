@@ -12,6 +12,9 @@ from database.commands.ttl import ttlItem
 
 connection = sqlite3.connect("kelvin.db")
 
+connection.execute("PRAGMA journal_mode=WAL")
+connection.execute("PRAGMA synchronous=NORMAL")
+
 connection.execute(
     "CREATE TABLE IF NOT EXISTS kv(" \
     "key TEXT PRIMARY KEY," \
@@ -24,19 +27,27 @@ cache = OrderedDict()
 
 def databaseContext(func):
     @wraps(func)
-    def wrapper(*args, cache_size: int | None = None, **kwargs):
+    def wrapper(*args, cache_size: int | None = None, auto_commit: bool = True, **kwargs):
         active_cache = cache if cache_size is not None else None
-        with connection:
+        try:
             result = func(connection, active_cache, *args, **kwargs)
-            if result.expires_at is not None:
-                if time.time() >= result.expires_at:
-                    delItem(connection, active_cache, kwargs["key"])
-                    return CommandResults()
+            if result.expires_at is not None and time.time() >= result.expires_at:
+                delItem(connection, active_cache, kwargs["key"])
+                return CommandResults()
 
-        if active_cache is not None:
-            while len(active_cache) > cache_size:
-                active_cache.popitem(last=False)
-        return result
+            if active_cache is not None:
+                while len(active_cache) > cache_size:
+                    active_cache.popitem(last=False)
+
+            if auto_commit:
+                connection.commit()
+
+            return result
+        except Exception:
+            if auto_commit:
+                connection.rollback()
+                
+            raise
     return wrapper
 
 class Operation:

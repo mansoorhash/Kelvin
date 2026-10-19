@@ -10,6 +10,13 @@ def cache_check(val):
         )
     return val
 
+def appendfsync_check(val):
+    if val not in ("always", "everysec", "no"):
+        raise argparse.ArgumentTypeError(
+            "appendfsync time must be either always, everysec, or no"
+        )
+    return val
+
 def main():
 
     parser = argparse.ArgumentParser(
@@ -31,6 +38,19 @@ def main():
     )
 
     parser.add_argument(
+        "--appendfsync",
+        nargs="?",
+        default="no",
+        type=appendfsync_check,
+        metavar="SIZE",
+        help=(
+            "Enable appending to aof, if so what at what rate"
+            "(default: no)"
+        ),
+    )
+
+
+    parser.add_argument(
         "--cache",
         nargs="?",
         const=100,
@@ -44,7 +64,7 @@ def main():
     )
 
     args = parser.parse_args()
-    run(ip=args.ip, port=args.port, cache_size=args.cache)
+    run(ip=args.ip, port=args.port, cache_size=args.cache, aof_type=args.appendfsync)
 
 if __name__ == "__main__":
     print("Kelvin Starting")

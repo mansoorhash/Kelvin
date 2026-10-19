@@ -5,7 +5,13 @@ from models import ExecuteResult
 def argumentCount(opr: str) -> bytes:
     return error_response(f"wrong number of arguments for '{opr.lower()}' command")
 
-def execute(commands: list[bytes | str], cache_size: int | None, aof: bool = False) -> ExecuteResult:
+def execute(
+        commands: list[bytes | str], 
+        cache_size: int | None, 
+        aof: bool = False, 
+        auto_commit: bool = True
+    ) -> ExecuteResult:
+
     try:
         if not aof:
             try:
@@ -16,6 +22,11 @@ def execute(commands: list[bytes | str], cache_size: int | None, aof: bool = Fal
         else:
             operation = commands[0]
             arguments = commands[1:]
+
+        commit_options = {}
+
+        if not auto_commit:
+            commit_options["auto_commit"] = False
         
         if operation == "PING":
             if len(arguments) == 0:
@@ -27,18 +38,31 @@ def execute(commands: list[bytes | str], cache_size: int | None, aof: bool = Fal
         elif operation == "SET":
             if len(arguments) == 2:
                 key, value = arguments
-                result = Operation.set(key=key, value=value, cache_size=cache_size)
+                result = Operation.set(key=key, value=value, cache_size=cache_size, auto_commit=auto_commit,)
             elif len(arguments) == 4:
                 key, value, exp_type, expiration_value = arguments
-                if exp_type != "PX" and exp_type != "EX" and exp_type != "PXAT":
+                valid_exp_types = {"PX", "EX"}
+                if aof:
+                    valid_exp_types.add("PXAT")
+
+                if exp_type not in valid_exp_types:
                     return ExecuteResult(error_response(f"invalid expiration type, use PX (milliseconds) or EX (seconds)"))
                 if not expiration_value.isdecimal() or int(expiration_value) <= 0:
                     return ExecuteResult(error_response(f"invalid expiration time (time>0)"))
-                result = Operation.set(key=key, value=value, cache_size=cache_size, exp_type=exp_type, exp_time=int(expiration_value))
+                
+                result = Operation.set(
+                    key=key, value=value, 
+                    cache_size=cache_size, 
+                    exp_type=exp_type, 
+                    exp_time=int(expiration_value), 
+                    **commit_options
+                )
             else:
                 return ExecuteResult(argumentCount(operation))            
+            
             if result.return_value is None:
                 return ExecuteResult(response=simple_string("OK"))
+            
             return ExecuteResult(
                 response=simple_string(result.return_value),
                 command=operation,

@@ -13,7 +13,6 @@ def delItem(conn, cache, key: str) -> CommandResults:
         )
         row = cursor.fetchone()
         expires_at = row[0] if row else None
-        conn.commit()
         state = cursor.rowcount    
 
     except Exception as e:

@@ -11,7 +11,6 @@ def setItem(conn, cache, key: str, value: str, exp_type: str | None = None, exp_
             "INSERT OR REPLACE INTO kv (key, value, expires_at) VALUES (?, ?, ?)",
             (key, value, expires_at)
         )
-        conn.commit()
 
         if cursor.rowcount <= 0:
             raise Exception("Item not set")

@@ -1,0 +1,93 @@
+workload,mode,server,payload_bytes,operation,run,throughput,avg,minimum,p50,p95,p99,maximum,source
+3B,no_aof,redis,3,SET,1,30487.8,1.598,0.48,1.527,2.543,3.583,5.879,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,GET,1,28089.89,1.733,0.552,1.663,2.687,4.143,6.487,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,SET,2,31055.9,1.662,0.56,1.583,2.447,4.351,8.383,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,GET,2,28571.43,1.689,0.488,1.591,2.599,4.335,8.231,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,SET,3,29325.51,1.643,0.544,1.567,2.431,4.383,8.407,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,GET,3,29069.77,1.651,0.496,1.559,2.463,4.367,7.255,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,SET,4,28328.61,1.699,0.584,1.583,2.575,6.143,9.487,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,GET,4,27173.91,1.781,0.472,1.695,2.727,4.583,7.879,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,SET,5,28490.03,1.694,0.52,1.583,2.519,5.695,8.383,Pasted text(20261019-073413).txt
+3B,no_aof,redis,3,GET,5,29411.76,1.631,0.432,1.559,2.431,3.879,7.551,Pasted text(20261019-073413).txt
+3B,no_aof,kelvin,3,SET,1,20000.0,2.451,0.48,2.367,3.383,4.095,7.439,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,GET,1,25445.29,1.922,0.384,1.863,2.599,3.727,6.063,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,SET,2,20746.89,2.359,0.672,2.279,3.191,4.175,5.975,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,GET,2,27100.27,1.803,0.44,1.775,2.287,3.311,5.687,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,SET,3,21052.63,2.323,0.752,2.247,3.047,4.167,9.031,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,GET,3,28248.59,1.733,0.416,1.671,2.527,3.527,6.575,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,SET,4,21598.27,2.269,0.744,2.247,2.903,3.327,4.271,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,GET,4,25125.63,1.948,0.552,1.863,2.847,4.215,5.487,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,SET,5,20833.33,2.348,0.784,2.287,3.079,4.063,7.031,Pasted text (2)(20261019-073423).txt
+3B,no_aof,kelvin,3,GET,5,26315.79,1.86,0.512,1.799,2.543,3.743,6.463,Pasted text (2)(20261019-073423).txt
+3B,everysec_session,redis,3,SET,1,30959.75,1.572,0.424,1.495,2.447,3.767,6.631,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,GET,1,29154.52,1.668,0.52,1.575,2.599,4.551,7.927,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,SET,2,31152.65,1.562,0.496,1.479,2.359,4.527,7.215,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,GET,2,29850.75,1.624,0.512,1.551,2.503,3.703,7.511,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,SET,3,29325.51,1.655,0.544,1.575,2.463,4.383,7.111,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,GET,3,28490.03,1.691,0.52,1.599,2.559,4.367,7.871,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,SET,4,27855.15,1.734,0.576,1.655,2.671,4.135,7.167,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,GET,4,29498.53,1.623,0.464,1.535,2.471,4.487,7.799,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,SET,5,26809.65,1.802,0.472,1.711,2.815,4.575,8.079,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,redis,3,GET,5,25974.03,1.862,0.592,1.767,2.871,4.927,8.695,Pasted text (2)(20261019-073248).txt
+3B,everysec_session,kelvin,3,SET,1,4180.6,11.892,1.192,11.631,14.943,18.799,24.687,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,GET,1,26954.18,1.815,0.496,1.759,2.311,4.183,8.487,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,SET,2,4063.39,12.242,1.008,11.823,15.951,17.983,26.255,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,GET,2,27472.53,1.776,0.432,1.735,2.471,3.367,6.127,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,SET,3,4130.52,12.036,1.48,11.623,15.439,20.959,24.943,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,GET,3,27472.53,1.757,0.288,1.727,2.423,3.527,7.199,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,SET,4,4060.09,12.247,1.696,11.927,15.287,19.055,25.535,Pasted text(20261019-073234).txt
+3B,everysec_session,kelvin,3,GET,4,27100.27,1.859,0.448,1.823,2.527,3.183,7.759,Pasted text(20261019-073234).txt
+3B,always_session,redis,3,SET,1,17574.69,2.782,1.472,2.743,3.639,6.103,9.271,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,GET,1,26737.97,1.805,0.576,1.703,2.847,5.007,7.423,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,SET,2,16694.49,2.927,1.424,2.871,3.847,7.239,9.751,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,GET,2,27932.96,1.735,0.52,1.631,2.735,4.223,9.479,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,SET,3,17857.14,2.861,1.432,2.791,3.783,6.575,10.199,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,GET,3,28169.02,1.721,0.568,1.639,2.615,4.471,6.407,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,SET,4,17182.13,2.854,1.424,2.815,3.727,5.319,9.735,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,GET,4,29069.77,1.664,0.52,1.591,2.463,4.351,7.495,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,SET,5,17064.85,2.864,1.504,2.799,3.743,7.367,10.143,Pasted text(20261019-073843).txt
+3B,always_session,redis,3,GET,5,28653.29,1.687,0.496,1.615,2.567,4.167,6.527,Pasted text(20261019-073843).txt
+3B,always_session,kelvin,3,SET,1,686.67,72.684,3.912,71.999,83.263,113.151,154.239,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,GET,1,25316.46,1.932,0.464,1.903,2.599,3.015,6.687,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,SET,2,714.08,69.837,6.48,69.055,78.527,94.783,133.631,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,GET,2,28409.09,1.721,0.584,1.695,2.247,3.215,3.871,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,SET,3,692.23,72.14,2.384,71.423,83.199,93.759,133.759,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,GET,3,28409.09,1.719,0.6,1.679,2.199,2.823,6.263,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,SET,4,705.22,70.742,4.088,70.335,80.383,102.783,144.511,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,GET,4,27472.53,1.779,0.384,1.743,2.367,2.943,5.863,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,SET,5,682.69,73.081,3.84,72.191,83.903,100.223,128.639,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,GET,5,25380.71,1.925,0.312,1.847,2.799,3.375,5.503,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,SET,6,690.75,72.226,3.2,72.127,83.263,98.751,143.487,Pasted text (2)(20261019-073929).txt
+3B,always_session,kelvin,3,GET,6,24813.9,1.974,0.664,1.895,2.823,4.023,4.311,Pasted text (2)(20261019-073929).txt
+payload_sweep,aof_enabled,redis,300,SET,1,17094.02,2.861,1.376,2.807,4.023,5.935,7.863,Pasted text(20261019-075341).txt
+payload_sweep,aof_enabled,redis,300,GET,1,27247.96,1.791,0.496,1.647,3.007,5.527,10.543,Pasted text(20261019-075341).txt
+payload_sweep,aof_enabled,redis,30000,SET,1,5027.65,9.771,2.976,8.695,17.183,22.047,31.823,Pasted text(20261019-075341).txt
+payload_sweep,aof_enabled,redis,30000,GET,1,2778.55,3.949,0.688,3.135,10.023,16.527,33.471,Pasted text(20261019-075341).txt
+payload_sweep,aof_enabled,redis,3000,SET,1,13495.28,3.609,1.424,3.367,5.735,9.759,13.007,Pasted text(20261019-075341).txt
+payload_sweep,aof_enabled,redis,3000,GET,1,13717.42,2.69,0.56,2.503,4.735,8.319,14.639,Pasted text(20261019-075341).txt
+payload_sweep,aof_enabled,kelvin,300,SET,1,602.95,82.801,4.024,76.799,89.663,298.495,574.975,Pasted text (2)(20261019-075431).txt
+payload_sweep,aof_enabled,kelvin,300,GET,1,27397.26,1.781,0.512,1.743,2.391,3.391,4.975,Pasted text (2)(20261019-075431).txt
+payload_sweep,aof_enabled,kelvin,30000,SET,1,191.81,260.257,3.184,212.095,428.543,915.455,1049.599,Pasted text (2)(20261019-075431).txt
+payload_sweep,aof_enabled,kelvin,30000,GET,1,2807.41,4.04,0.344,2.919,11.711,18.303,41.983,Pasted text (2)(20261019-075431).txt
+payload_sweep,aof_enabled,kelvin,3000,SET,1,408.78,121.949,4.808,95.487,212.607,788.991,1047.039,Pasted text (2)(20261019-075431).txt
+payload_sweep,aof_enabled,kelvin,3000,GET,1,15527.95,2.345,0.328,2.207,4.279,5.935,9.695,Pasted text (2)(20261019-075431).txt
+30KB,no_aof,redis,30000,GET,1,2477.09,5.182,0.696,3.575,14.407,24.095,64.415,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,SET,1,5104.65,9.698,2.408,9.087,15.863,18.271,24.543,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,GET,2,2058.04,7.338,0.776,5.639,18.719,28.031,56.479,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,SET,2,3687.32,13.436,2.432,11.543,26.847,46.975,126.143,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,GET,3,1968.89,7.132,0.712,5.367,17.983,27.375,60.127,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,SET,3,4777.83,10.361,1.752,9.863,16.975,20.255,23.775,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,GET,4,2203.61,6.961,0.288,4.999,17.471,25.423,235.519,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,SET,4,4011.23,11.634,2.68,10.319,19.519,28.543,296.959,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,GET,5,1637.47,7.679,0.704,5.359,20.303,35.615,101.439,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,SET,5,4892.37,10.114,1.872,9.551,16.863,20.031,27.343,Pasted text(20261019-075826).txt
+30KB,no_aof,redis,30000,GET,6,1714.97,7.827,0.92,5.927,19.567,32.223,70.015,Pasted text(20261019-075826).txt
+30KB,no_aof,kelvin,30000,GET,1,1618.91,6.967,0.392,4.751,19.263,35.871,75.263,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,SET,1,4302.93,11.469,1.048,9.287,26.095,35.839,58.047,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,GET,2,2683.12,4.023,0.336,2.783,11.751,22.015,60.127,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,SET,2,4206.98,11.794,1.328,9.423,26.591,38.591,301.055,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,GET,3,2753.3,3.828,0.352,2.783,11.135,17.727,38.495,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,SET,3,4555.81,10.744,1.352,8.431,23.471,35.039,294.655,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,GET,4,1855.29,4.835,0.384,3.391,13.471,31.871,90.303,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,SET,4,4372.54,11.268,0.888,9.007,25.535,36.255,69.887,Pasted text (2)(20261019-075848).txt
+30KB,no_aof,kelvin,30000,GET,5,1994.42,4.848,0.32,3.311,14.279,29.487,70.143,Pasted text (2)(20261019-075848).txt
